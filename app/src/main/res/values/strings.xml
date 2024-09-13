@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">LabProject</string>
+    <string name="str_top_rated_movies">Top Rated Movies</string>
+    <string name="load_page">Load Page %1$s</string>
+</resources>

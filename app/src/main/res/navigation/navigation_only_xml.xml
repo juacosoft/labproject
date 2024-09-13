@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation_only_xml"
+    app:startDestination="@id/initialFragment">
+
+    <fragment
+        android:id="@+id/topRatedMoviesFragment"
+        android:name="com.example.labproject.ui.topratedlist.xmlview.TopRatedMoviesFragment"
+        tools:layout="@layout/fragment_topratedmovies" />
+    <fragment
+        android:id="@+id/initialFragment"
+        android:name="com.example.labproject.ui.initial_screen.composeview.InitialFragment"
+        android:label="InitialFragment" >
+        <action
+            android:id="@+id/initialFragment_navigate_to_topRatedMoviesFragment"
+            app:destination="@id/topRatedMoviesFragment" />
+        <action
+            android:id="@+id/initialFragment_navigate_to_topRatedMoviesFragmentCompose"
+            app:destination="@id/topRatedMoviesFragmentCompose" />
+        <action
+            android:id="@+id/initialFragment_navigate_to_topRatedMoviesComposeWithIVFragment"
+            app:destination="@id/topRatedMoviesComposeWithIVFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/topRatedMoviesFragmentCompose"
+        android:name="com.example.labproject.ui.topratedlist.crosscomposeview.TopRatedMoviesComposeWithRVFragment"
+        android:label="TopRatedMoviesFragmentCompose" />
+    <fragment
+        android:id="@+id/topRatedMoviesComposeWithIVFragment"
+        android:name="com.example.labproject.ui.topratedlist.crosscomposeview.TopRatedMoviesComposeWithIVFragment"
+        android:label="TopRatedMoviesComposeWithIVFragment" />
+    <composable
+        android:id="@+id/topRatedMoviesOnlyCompose"
+        android:name="com.example.labproject.ui.topratedlist.onlycompose.TopRatedMoviesOnlyComposeKt$TopRatedMoviesOnlyCompose" />
+</navigation>
