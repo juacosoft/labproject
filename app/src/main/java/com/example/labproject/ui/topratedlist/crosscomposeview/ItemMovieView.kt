@@ -54,7 +54,7 @@ class ItemMovieView @JvmOverloads constructor(
             }
         }
 
-        findViewById<CardView>(R.id.card_view_content).setOnClickListener {
+        imageView.setOnClickListener {
             onClickListener()
         }
 

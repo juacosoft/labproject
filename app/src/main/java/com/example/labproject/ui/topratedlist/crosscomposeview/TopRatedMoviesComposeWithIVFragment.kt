@@ -117,14 +117,12 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
                                 }, update = { component ->
                                     component.setItem(movieItem) {
                                         Log.d("FROM_TOPRATED", "setItem: Clicked on item ${movieItem.title}")
+                                        Toast.makeText(
+                                            context,
+                                            "movie: ${movieItem.title}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
                                     }
-                                },
-                                modifier = Modifier.clickable {
-                                    Toast.makeText(
-                                        context,
-                                        "movie: ${movieItem.title}",
-                                        Toast.LENGTH_SHORT
-                                    ).show()
                                 }
                             )
                         }

@@ -86,7 +86,7 @@ class PopularMoviesComposeWithIVFragment: Fragment() {
         ) {
 
             Spacer(modifier = Modifier.height(12.dp))
-            Text(text = stringResource(id = R.string.str_top_rated_movies))
+            Text(text = stringResource(id = R.string.str_popular_movies))
             LazyVerticalGrid(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -111,41 +111,24 @@ class PopularMoviesComposeWithIVFragment: Fragment() {
                     is TopRatedANDPopularMoviesState.Success, TopRatedANDPopularMoviesState.LoadingMore -> {
                         val movies = moviesState.data?.results ?: emptyList()
                         movieList.addAll(movies)
-                        if (movieList.isNotEmpty()) {
-                            items(movieList) { movieItem ->
-                                AndroidView(
-                                    factory = { viewContext ->
-                                        ItemMovieView(viewContext)
-                                    }, update = { component ->
-                                        component.setItem(movieItem) {
-                                            Log.d(
-                                                "FROM_POPULAR",
-                                                "setItem: Clicked on item ${movieItem.title}"
-                                            )
-                                        }
-                                    },
-                                    modifier = Modifier.clickable {
+                        items(movieList) { movieItem ->
+                            AndroidView(
+                                factory = { viewContext ->
+                                    ItemMovieView(viewContext)
+                                }, update = { component ->
+                                    component.setItem(movieItem) {
+                                        Log.d(
+                                            "FROM_POPULAR",
+                                            "setItem: Clicked on item ${movieItem.title}"
+                                        )
                                         Toast.makeText(
                                             context,
                                             "movie: ${movieItem.title}",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
-                                )
-                            }
-                        } else {
-                            item(
-                                span = {
-                                    GridItemSpan(maxLineSpan)
                                 }
-                            ) {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(text = "Sin elementos")
-                                }
-                            }
+                            )
                         }
                         item(
                             span = {
