@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -34,7 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import com.example.labproject.R
 import com.example.labproject.domain.entity.MovieEntity
 import com.example.labproject.ui.topratedlist.TopRatedMoviesViewModel
@@ -43,9 +42,7 @@ import com.google.android.material.progressindicator.CircularProgressIndicator
 
 class TopRatedMoviesComposeWithIVFragment: Fragment() {
 
-    private val viewModel: TopRatedMoviesViewModel by lazy {
-        ViewModelProvider(this).get(TopRatedMoviesViewModel::class.java)
-    }
+    private val viewModel: TopRatedMoviesViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -64,7 +61,7 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
 
     override fun onDestroy() {
         super.onDestroy()
-        viewModel.clearCache()
+        //viewModel.clearCache()
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
