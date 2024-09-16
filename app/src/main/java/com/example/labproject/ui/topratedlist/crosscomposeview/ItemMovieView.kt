@@ -4,9 +4,11 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.AttributeSet
+import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.ImageView
+import androidx.cardview.widget.CardView
 import com.example.labproject.R
 import com.example.labproject.domain.entity.MovieEntity
 import com.example.labproject.ui.uttils.ImageCache
@@ -30,7 +32,8 @@ class ItemMovieView @JvmOverloads constructor(
 
     @OptIn(DelicateCoroutinesApi::class)
     fun setItem(
-        item: MovieEntity
+        item: MovieEntity,
+        onClickListener: () -> Unit
     ){
 
         val imageView = findViewById<ImageView>(R.id.movie_image)
@@ -50,6 +53,11 @@ class ItemMovieView @JvmOverloads constructor(
                 }
             }
         }
+
+        findViewById<CardView>(R.id.card_view_content).setOnClickListener {
+            onClickListener()
+        }
+
 
     }
 

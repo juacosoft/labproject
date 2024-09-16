@@ -33,7 +33,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.labproject.R
 import com.example.labproject.domain.entity.MovieEntity
 import com.example.labproject.ui.topratedlist.TopRatedMoviesViewModel
-import com.example.labproject.ui.topratedlist.state.TopRatedMoviesState
+import com.example.labproject.ui.topratedlist.state.TopRatedANDPopularMoviesState
 import com.google.android.material.progressindicator.CircularProgressIndicator
 
 class TopRatedMoviesComposeWithRVFragment : Fragment() {
@@ -59,7 +59,7 @@ class TopRatedMoviesComposeWithRVFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (viewModel.moviesState.value !is TopRatedMoviesState.Success) {
+        if (viewModel.moviesState.value !is TopRatedANDPopularMoviesState.Success) {
             viewModel.loadTopRatedMovies()
         }
     }
@@ -79,10 +79,10 @@ class TopRatedMoviesComposeWithRVFragment : Fragment() {
                 Text(text = stringResource(id = R.string.str_top_rated_movies))
             }
             when(topRatedMoviesState) {
-                is TopRatedMoviesState.Error -> {
+                is TopRatedANDPopularMoviesState.Error -> {
                     Log.d("FragmenttopRated", "observeflowData: ${topRatedMoviesState.errorType}")
                 }
-                TopRatedMoviesState.Loading -> {
+                TopRatedANDPopularMoviesState.Loading -> {
                     item {
                         Box(
                             modifier = Modifier.fillMaxWidth(),
@@ -96,7 +96,7 @@ class TopRatedMoviesComposeWithRVFragment : Fragment() {
                         }
                     }
                 }
-                is TopRatedMoviesState.Success, TopRatedMoviesState.LoadingMore -> {
+                is TopRatedANDPopularMoviesState.Success, TopRatedANDPopularMoviesState.LoadingMore -> {
                     item {
                         val movies = topRatedMoviesState.data?.results ?: emptyList()
                         RecyclerViewContent(movies) { movieSelected ->
@@ -104,7 +104,7 @@ class TopRatedMoviesComposeWithRVFragment : Fragment() {
                         }
                     }
                     item {
-                        if (topRatedMoviesState is TopRatedMoviesState.LoadingMore) {
+                        if (topRatedMoviesState is TopRatedANDPopularMoviesState.LoadingMore) {
                             Box(
                                 modifier = Modifier.fillMaxWidth(),
                                 contentAlignment = Alignment.Center

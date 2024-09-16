@@ -7,7 +7,7 @@ import com.example.labproject.domain.basic.BasicErrorType
 import com.example.labproject.domain.basic.BasicResourceData
 import com.example.labproject.domain.usecases.GetTopRatedMoviesUseCase
 import com.example.labproject.ui.topratedlist.state.TopRatedMoviesErrorType
-import com.example.labproject.ui.topratedlist.state.TopRatedMoviesState
+import com.example.labproject.ui.topratedlist.state.TopRatedANDPopularMoviesState
 import com.example.labproject.ui.uttils.ImageCache
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,7 +18,7 @@ class TopRatedMoviesViewModel: ViewModel() {
     private val retrofitApi = RetrofitProvider.getMoviesApi()
     private var getTopRatedMoviesUseCase: GetTopRatedMoviesUseCase
 
-    private var _moviesState: MutableStateFlow<TopRatedMoviesState> = MutableStateFlow(TopRatedMoviesState.Loading)
+    private var _moviesState: MutableStateFlow<TopRatedANDPopularMoviesState> = MutableStateFlow(TopRatedANDPopularMoviesState.Loading)
     val moviesState = _moviesState.asStateFlow()
 
     private var currentPage: Int = 0
@@ -30,27 +30,27 @@ class TopRatedMoviesViewModel: ViewModel() {
 
     fun cantLoadMore(): Boolean {
         val isHasMorePages = currentPage < totalPages
-        return isHasMorePages && moviesState.value !is TopRatedMoviesState.LoadingMore && moviesState.value !is TopRatedMoviesState.Loading
+        return isHasMorePages && moviesState.value !is TopRatedANDPopularMoviesState.LoadingMore && moviesState.value !is TopRatedANDPopularMoviesState.Loading
     }
 
     fun loadTopRatedMovies() {
         viewModelScope.launch {
             currentPage = currentPage + 1
             if (currentPage == 1) {
-                _moviesState.value = TopRatedMoviesState.Loading
+                _moviesState.value = TopRatedANDPopularMoviesState.Loading
             } else {
-                _moviesState.value = TopRatedMoviesState.LoadingMore
+                _moviesState.value = TopRatedANDPopularMoviesState.LoadingMore
             }
             getTopRatedMoviesUseCase(currentPage).collect { response ->
                 when(response) {
                     is BasicResourceData.Error -> {
                         currentPage = currentPage--
-                        _moviesState.value = TopRatedMoviesState.Error(processError(response.errorType!!))
+                        _moviesState.value = TopRatedANDPopularMoviesState.Error(processError(response.errorType!!))
                     }
                     is BasicResourceData.Success -> {
                         currentPage = response.data?.page ?: 1
                         totalPages = response.data?.total_pages ?: 1
-                        _moviesState.value = TopRatedMoviesState.Success(response.data!!)
+                        _moviesState.value = TopRatedANDPopularMoviesState.Success(response.data!!)
                     }
                 }
             }

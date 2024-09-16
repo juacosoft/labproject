@@ -85,6 +85,12 @@ class InitialFragment: Fragment() {
             }) {
                 Text(text = "Case 1 LazyColumn and xml itemCard")
             }
+            Spacer(modifier = Modifier.height(10.dp))
+            Button(onClick = {
+                findNavController().navigate(InitialFragmentDirections.initialFragmentNAVIGATEToPopularMoviesComposeWithIVFragment())
+            }) {
+                Text(text = "Case 3 LazyVerticalGrid and xml itemCard test event click")
+            }
         }
     }
 

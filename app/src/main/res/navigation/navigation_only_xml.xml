@@ -22,6 +22,9 @@
         <action
             android:id="@+id/initialFragment_navigate_to_topRatedMoviesComposeWithIVFragment"
             app:destination="@id/topRatedMoviesComposeWithIVFragment" />
+        <action
+            android:id="@+id/initialFragment_NAVIGATE_to_popularMoviesComposeWithIVFragment"
+            app:destination="@id/popularMoviesComposeWithIVFragment" />
     </fragment>
     <fragment
         android:id="@+id/topRatedMoviesFragmentCompose"
@@ -34,4 +37,8 @@
     <composable
         android:id="@+id/topRatedMoviesOnlyCompose"
         android:name="com.example.labproject.ui.topratedlist.onlycompose.TopRatedMoviesOnlyComposeKt$TopRatedMoviesOnlyCompose" />
+    <fragment
+        android:id="@+id/popularMoviesComposeWithIVFragment"
+        android:name="com.example.labproject.ui.topratedlist.xmlview.PopularMoviesComposeWithIVFragment"
+        android:label="PopularMoviesComposeWithIVFragment" />
 </navigation>

@@ -11,4 +11,9 @@ interface MoviesApi {
     suspend fun getTopRatedMovies(
         @Query("page") page: Int
     ): Response<MoviesResponse>
+
+    @GET("movie/popular?language=en-US")
+    suspend fun getPopularMovies(
+        @Query("page") page: Int
+    ): Response<MoviesResponse>
 }

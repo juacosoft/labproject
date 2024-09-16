@@ -38,7 +38,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.example.labproject.R
 import com.example.labproject.domain.entity.MovieEntity
 import com.example.labproject.ui.topratedlist.TopRatedMoviesViewModel
-import com.example.labproject.ui.topratedlist.state.TopRatedMoviesState
+import com.example.labproject.ui.topratedlist.state.TopRatedANDPopularMoviesState
 import com.google.android.material.progressindicator.CircularProgressIndicator
 
 class TopRatedMoviesComposeWithIVFragment: Fragment() {
@@ -51,7 +51,7 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         return ComposeView(requireContext()).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
@@ -69,7 +69,7 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (viewModel.moviesState.value !is TopRatedMoviesState.Success) {
+        if (viewModel.moviesState.value !is TopRatedANDPopularMoviesState.Success) {
             viewModel.loadTopRatedMovies()
         }
     }
@@ -93,9 +93,9 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
                 columns = GridCells.Fixed(3),
             ){
                 when(moviesState) {
-                    is TopRatedMoviesState.Error ->
+                    is TopRatedANDPopularMoviesState.Error ->
                         Log.d("FragmenttopRated", "observeflowData: ${moviesState.errorType}")
-                    TopRatedMoviesState.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
+                    TopRatedANDPopularMoviesState.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
                         Box(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.Center
@@ -107,7 +107,7 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
                             })
                         }
                     }
-                    is TopRatedMoviesState.Success, TopRatedMoviesState.LoadingMore -> {
+                    is TopRatedANDPopularMoviesState.Success, TopRatedANDPopularMoviesState.LoadingMore -> {
                         val movies = moviesState.data?.results ?: emptyList()
                         movieList.addAll(movies)
                         items(movieList) { movieItem ->
@@ -115,7 +115,9 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
                                 factory = { viewContext ->
                                     ItemMovieView(viewContext)
                                 }, update = { component ->
-                                    component.setItem(movieItem)
+                                    component.setItem(movieItem) {
+                                        Log.d("FROM_TOPRATED", "setItem: Clicked on item ${movieItem.title}")
+                                    }
                                 },
                                 modifier = Modifier.clickable {
                                     Toast.makeText(
@@ -131,7 +133,7 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
                                 GridItemSpan(maxLineSpan)
                             }
                         ) {
-                            if (moviesState is TopRatedMoviesState.LoadingMore) {
+                            if (moviesState is TopRatedANDPopularMoviesState.LoadingMore) {
                                 Box(
                                     modifier = Modifier.fillMaxWidth(),
                                     contentAlignment = Alignment.Center
@@ -145,7 +147,7 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
                                 }
 
                             }
-                            if (moviesState is TopRatedMoviesState.Success){
+                            if (moviesState is TopRatedANDPopularMoviesState.Success){
                                 Box(
                                     modifier = Modifier.fillMaxWidth(),
                                     contentAlignment = Alignment.Center

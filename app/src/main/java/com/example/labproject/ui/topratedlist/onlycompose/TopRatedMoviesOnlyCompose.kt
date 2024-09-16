@@ -2,7 +2,6 @@ package com.example.labproject.ui.topratedlist.onlycompose
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.Bundle
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -43,7 +42,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.labproject.R
 import com.example.labproject.domain.entity.MovieEntity
 import com.example.labproject.ui.topratedlist.TopRatedMoviesViewModel
-import com.example.labproject.ui.topratedlist.state.TopRatedMoviesState
+import com.example.labproject.ui.topratedlist.state.TopRatedANDPopularMoviesState
 import com.example.labproject.ui.uttils.ImageCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -76,8 +75,8 @@ fun TopRatedMoviesOnlyCompose() {
             columns = GridCells.Fixed(3)
         ) {
             when(moviesState){
-                is TopRatedMoviesState.Error -> Unit
-                TopRatedMoviesState.Loading -> item(
+                is TopRatedANDPopularMoviesState.Error -> Unit
+                TopRatedANDPopularMoviesState.Loading -> item(
                     span = {
                         GridItemSpan(maxLineSpan)
                     }
@@ -89,7 +88,7 @@ fun TopRatedMoviesOnlyCompose() {
                         CircularProgressIndicator()
                     }
                 }
-                is TopRatedMoviesState.Success, TopRatedMoviesState.LoadingMore -> {
+                is TopRatedANDPopularMoviesState.Success, TopRatedANDPopularMoviesState.LoadingMore -> {
                     val movies = moviesState.data?.results ?: emptyList()
                     movieList.addAll(movies)
                     items(movieList){
@@ -102,7 +101,7 @@ fun TopRatedMoviesOnlyCompose() {
                             GridItemSpan(maxLineSpan)
                         }
                     ) {
-                        if(moviesState is TopRatedMoviesState.LoadingMore){
+                        if(moviesState is TopRatedANDPopularMoviesState.LoadingMore){
                             Box(
                                 modifier = Modifier.padding(horizontal = 30.dp),
                                 contentAlignment = Alignment.Center
@@ -110,7 +109,7 @@ fun TopRatedMoviesOnlyCompose() {
                                 CircularProgressIndicator()
                             }
                         }
-                        if(moviesState is TopRatedMoviesState.Success){
+                        if(moviesState is TopRatedANDPopularMoviesState.Success){
                             Box(
                                 modifier = Modifier.padding(horizontal = 30.dp),
                                 contentAlignment = Alignment.Center
