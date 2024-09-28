@@ -15,16 +15,18 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
@@ -33,16 +35,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import com.example.labproject.R
-import com.example.labproject.domain.entity.MovieEntity
-import com.example.labproject.ui.topratedlist.TopRatedMoviesViewModel
-import com.example.labproject.ui.topratedlist.state.TopRatedANDPopularMoviesState
+import com.example.labproject.ui.topratedlist.topratedmvi.TopRatedMoviesContract
+import com.example.labproject.ui.topratedlist.topratedmvi.TopRatedMoviesMVIViewModel
 import com.google.android.material.progressindicator.CircularProgressIndicator
 
 class TopRatedMoviesComposeWithIVFragment: Fragment() {
 
-    private val viewModel: TopRatedMoviesViewModel by activityViewModels()
+    private val viewModel: TopRatedMoviesMVIViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -59,40 +60,36 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
         }
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
-        //viewModel.clearCache()
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        if (viewModel.moviesState.value !is TopRatedANDPopularMoviesState.Success) {
-            viewModel.loadTopRatedMovies()
+        if (viewModel.uiState.value?.movies.isNullOrEmpty()) {
+            viewModel.handleEvent(TopRatedMoviesContract.UiEvent.LoadTopRatedMovies)
         }
     }
 
     @Composable
     private fun TopRatedMoviesView() {
-        val moviesState by viewModel.moviesState.collectAsState()
-        val movieList = remember { mutableStateListOf<MovieEntity>() }
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-        ) {
-
-            Spacer(modifier = Modifier.height(12.dp))
-            Text(text = stringResource(id = R.string.str_top_rated_movies))
+        val uiState by viewModel.uiState.collectAsState()
+        val uiEffect by viewModel.effect.collectAsState(
+            initial = null
+        )
+        val listState = rememberLazyGridState()
+        Scaffold(
+            modifier = Modifier.fillMaxSize()
+                .padding(horizontal = 8.dp, vertical = 0.dp),
+            topBar = {
+                Text(text = stringResource(id = R.string.str_top_rated_movies))
+            }
+        ) { contentPadding ->
             LazyVerticalGrid(
+                state = listState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 20.dp),
-                columns = GridCells.Fixed(3),
-            ){
-                when(moviesState) {
-                    is TopRatedANDPopularMoviesState.Error ->
-                        Log.d("FragmenttopRated", "observeflowData: ${moviesState.errorType}")
-                    TopRatedANDPopularMoviesState.Loading -> item(span = { GridItemSpan(maxLineSpan) }) {
+                    .padding(top = contentPadding.calculateTopPadding()),
+                columns = GridCells.Adaptive(100.dp),
+            ) {
+                when {
+                    uiState?.isLoading == true -> item(span = { GridItemSpan(maxLineSpan) }) {
                         Box(
                             modifier = Modifier.fillMaxWidth(),
                             contentAlignment = Alignment.Center
@@ -104,61 +101,85 @@ class TopRatedMoviesComposeWithIVFragment: Fragment() {
                             })
                         }
                     }
-                    is TopRatedANDPopularMoviesState.Success, TopRatedANDPopularMoviesState.LoadingMore -> {
-                        val movies = moviesState.data?.results ?: emptyList()
-                        movieList.addAll(movies)
-                        items(movieList) { movieItem ->
+
+                    uiState?.error != null -> {
+                        Log.d("FragmenttopRated", "observeflowData: ${uiState?.error}")
+                    }
+
+                    uiState?.movies.isNullOrEmpty() -> {
+                        Log.d("FragmenttopRated", "observeflowData: ${uiState?.movies}")
+                    }
+
+                    else -> {
+
+                        items(uiState!!.movies) { movieItem ->
                             AndroidView(
                                 factory = { viewContext ->
                                     ItemMovieView(viewContext)
                                 }, update = { component ->
                                     component.setItem(movieItem) {
-                                        Log.d("FROM_TOPRATED", "setItem: Clicked on item ${movieItem.title}")
-                                        Toast.makeText(
-                                            context,
-                                            "movie: ${movieItem.title}",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                                        viewModel.handleEvent(
+                                            TopRatedMoviesContract.UiEvent.OnClickItemMovie(
+                                                movieItem
+                                            )
+                                        )
                                     }
                                 }
                             )
                         }
-                        item(
-                            span = {
-                                GridItemSpan(maxLineSpan)
-                            }
-                        ) {
-                            if (moviesState is TopRatedANDPopularMoviesState.LoadingMore) {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    AndroidView(factory = {
-                                        val component = CircularProgressIndicator(it)
-                                        component.isIndeterminate = true
-                                        component
-
-                                    })
+                        if (uiState?.cantLoadMore == true) {
+                            item(
+                                span = {
+                                    GridItemSpan(maxLineSpan)
                                 }
-
-                            }
-                            if (moviesState is TopRatedANDPopularMoviesState.Success){
+                            ){
                                 Box(
                                     modifier = Modifier.fillMaxWidth(),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Button(onClick = {
-                                        if (viewModel.cantLoadMore()) {
-                                            viewModel.loadTopRatedMovies()
-                                        }
+                                        viewModel.handleEvent(TopRatedMoviesContract.UiEvent.LoadMoreTopRatedMovies)
                                     }) {
-                                        val nextPage = moviesState.data?.page?.plus(1) ?: 0
-                                        Text(text = stringResource(id = R.string.load_page, nextPage.toString()))
+                                        val nextPage = (uiState?.currentPage?:1) + 1
+                                        Text(
+                                            text = stringResource(
+                                                id = R.string.load_page,
+                                                nextPage.toString()
+                                            )
+                                        )
                                     }
                                 }
                             }
                         }
+                        if (uiState?.isLoadingMore == true) {
+                            item(
+                                span = {
+                                    GridItemSpan(maxLineSpan)
+                                }
+                            ) {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    AndroidView(
+                                        factory = {
+                                            val component = CircularProgressIndicator(it)
+                                            component.isIndeterminate = true
+                                            component
+                                        }
+                                    )
+                                }
+                            }
+                        }
                     }
+                }
+            }
+            uiEffect?.let { effect ->
+                when(effect) {
+                    is TopRatedMoviesContract.Effect.ShowToast -> Unit
+
+                    is TopRatedMoviesContract.Effect.NavigateToDetail ->
+                        Toast.makeText(context, effect.movie.title, Toast.LENGTH_SHORT).show()
                 }
             }
         }
