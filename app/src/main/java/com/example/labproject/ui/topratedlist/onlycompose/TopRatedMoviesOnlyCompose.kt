@@ -2,32 +2,43 @@ package com.example.labproject.ui.topratedlist.onlycompose
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonColors
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedIconButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -41,94 +52,121 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.labproject.R
 import com.example.labproject.domain.entity.MovieEntity
-import com.example.labproject.ui.topratedlist.TopRatedMoviesViewModel
-import com.example.labproject.ui.topratedlist.state.TopRatedANDPopularMoviesState
+import com.example.labproject.ui.NavControllerProvider
+import com.example.labproject.ui.topratedlist.topratedmvi.TopRatedMoviesContract
+import com.example.labproject.ui.topratedlist.topratedmvi.TopRatedMoviesMVIViewModel
 import com.example.labproject.ui.uttils.ImageCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.net.URL
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopRatedMoviesOnlyCompose() {
-    val viewmodel: TopRatedMoviesViewModel = viewModel()
-    val moviesState by viewmodel.moviesState.collectAsState()
-    val movieList = remember { mutableStateListOf<MovieEntity>() }
-    val localContext = LocalContext.current
+    val viewModel: TopRatedMoviesMVIViewModel = viewModel()
+    val uiState by viewModel.uiState.collectAsState()
+    val listState = rememberLazyGridState()
+    val navController = NavControllerProvider.current
+
     LaunchedEffect(Unit) {
-        viewmodel.loadTopRatedMovies()
+        if (uiState?.movies.isNullOrEmpty()) {
+            viewModel.handleEvent(TopRatedMoviesContract.UiEvent.LoadTopRatedMovies)
+        }
     }
 
-    DisposableEffect(Unit) {
-        onDispose { viewmodel.clearCache() }
-    }
-    Column(
+    HandleEffects(viewModel)
+
+    Scaffold(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 16.dp)
-    ) {
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(text = stringResource(id = R.string.str_top_rated_movies))
-        LazyVerticalGrid(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 20.dp),
-            columns = GridCells.Fixed(3)
-        ) {
-            when(moviesState){
-                is TopRatedANDPopularMoviesState.Error -> Unit
-                TopRatedANDPopularMoviesState.Loading -> item(
-                    span = {
-                        GridItemSpan(maxLineSpan)
-                    }
-                ) {
-                    Box(
-                        modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+            .padding(horizontal = 8.dp, vertical = 0.dp),
+        topBar = {
+            TopAppBar(
+                title = {
+                    Text(
+                        text = stringResource(id = R.string.str_top_rated_movies),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController?.popBackStack() }) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
                     }
                 }
-                is TopRatedANDPopularMoviesState.Success, TopRatedANDPopularMoviesState.LoadingMore -> {
-                    val movies = moviesState.data?.results ?: emptyList()
-                    movieList.addAll(movies)
-                    items(movieList){
-                        ItemMovie(it) {
-                            Toast.makeText(localContext, "movie: ${it.title}", Toast.LENGTH_SHORT).show()
+            )
+        }
+    ) { contentPadding ->
+        LazyVerticalGrid(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = contentPadding.calculateTopPadding()),
+            columns = GridCells.Adaptive(100.dp),
+        ) {
+            when {
+                uiState?.isLoading == true -> item(span = { GridItemSpan(maxLineSpan) }) {
+                    CircularProgressIndicator()
+                }
+
+                uiState?.error != null -> {
+                    Log.d("FragmenttopRated", "observeflowData: ${uiState?.error}")
+                }
+
+                uiState?.movies.isNullOrEmpty() -> {
+                    Log.d("FragmenttopRated", "observeflowData: ${uiState?.movies}")
+                }
+
+                else -> {
+
+                    items(uiState!!.movies) { movieItem ->
+                        ItemMovie(item = movieItem) {
+                            viewModel.handleEvent(
+                                TopRatedMoviesContract.UiEvent.OnClickItemMovie(
+                                    movieItem
+                                )
+                            )
                         }
                     }
-                    item(
-                        span = {
-                            GridItemSpan(maxLineSpan)
-                        }
-                    ) {
-                        if(moviesState is TopRatedANDPopularMoviesState.LoadingMore){
+                    if (uiState?.cantLoadMore == true) {
+                        item(
+                            span = {
+                                GridItemSpan(maxLineSpan)
+                            }
+                        ){
                             Box(
-                                modifier = Modifier.padding(horizontal = 30.dp),
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Button(onClick = {
+                                    viewModel.handleEvent(TopRatedMoviesContract.UiEvent.LoadMoreTopRatedMovies)
+                                }) {
+                                    val nextPage = (uiState?.currentPage?:1) + 1
+                                    Text(
+                                        text = stringResource(
+                                            id = R.string.load_page,
+                                            nextPage.toString()
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    if (uiState?.isLoadingMore == true) {
+                        item(
+                            span = {
+                                GridItemSpan(maxLineSpan)
+                            }
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
                                 contentAlignment = Alignment.Center
                             ) {
                                 CircularProgressIndicator()
                             }
                         }
-                        if(moviesState is TopRatedANDPopularMoviesState.Success){
-                            Box(
-                                modifier = Modifier.padding(horizontal = 30.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Button(onClick = {
-                                    if (viewmodel.cantLoadMore()) {
-                                        viewmodel.loadTopRatedMovies()
-                                    }
-                                }) {
-                                    val nextPage = moviesState.data?.page?.plus(1)
-                                    Text(text = stringResource(id = R.string.load_page, nextPage.toString()))
-                                }
-                            }
-
-                        }
                     }
                 }
             }
-
         }
     }
 }
@@ -180,6 +218,39 @@ private fun ItemMovie(item: MovieEntity, onClick: () -> Unit) {
                     )
                 }
             }
+        }
+        FilledIconButton(
+            onClick = {  },
+            modifier = Modifier.align(Alignment.TopEnd).size(20.dp),
+            colors = IconButtonColors(
+                contentColor = MaterialTheme.colorScheme.onBackground,
+                disabledContentColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                containerColor = MaterialTheme.colorScheme.surface,
+                disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f)
+            )
+        ) {
+            Icon(
+                imageVector = Icons.Default.MoreVert,
+                contentDescription = null
+            )
+        }
+    }
+}
+
+@Composable
+private fun HandleEffects(viewModel: TopRatedMoviesMVIViewModel) {
+    val uiEffect by viewModel.effect.collectAsState(
+        initial = null
+    )
+    val context = LocalContext.current
+    LaunchedEffect(uiEffect) {
+        when(uiEffect) {
+            is TopRatedMoviesContract.Effect.ShowToast -> Unit
+
+            is TopRatedMoviesContract.Effect.NavigateToDetail ->
+                Toast.makeText(context, (uiEffect as TopRatedMoviesContract.Effect.NavigateToDetail).movie.title, Toast.LENGTH_SHORT).show()
+
+            else -> Unit
         }
     }
 }
