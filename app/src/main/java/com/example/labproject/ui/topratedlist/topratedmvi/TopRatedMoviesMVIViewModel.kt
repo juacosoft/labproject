@@ -1,5 +1,6 @@
 package com.example.labproject.ui.topratedlist.topratedmvi
 
+import androidx.annotation.VisibleForTesting
 import androidx.lifecycle.viewModelScope
 import com.example.labproject.data.network.RetrofitProvider
 import com.example.labproject.domain.basic.BasicErrorType
@@ -13,7 +14,9 @@ import kotlinx.coroutines.launch
 class TopRatedMoviesMVIViewModel: MVIBaseViewModel<TopRatedMoviesContract.UiState, TopRatedMoviesContract.UiEvent, TopRatedMoviesContract.Effect>()  {
 
     private val retrofitApi = RetrofitProvider.getMoviesApi()
-    private var getTopRatedMoviesUseCase: GetTopRatedMoviesUseCase
+
+    @VisibleForTesting
+    var getTopRatedMoviesUseCase: GetTopRatedMoviesUseCase
 
     var currentPage: Int = 0
         private set
