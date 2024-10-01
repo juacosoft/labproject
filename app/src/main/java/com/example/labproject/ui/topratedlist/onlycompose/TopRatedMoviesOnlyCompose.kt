@@ -72,7 +72,11 @@ fun TopRatedMoviesOnlyCompose() {
         }
     }
 
+    // region effects
+
     HandleEffects(viewModel)
+
+    // endregion
 
     Scaffold(
         modifier = Modifier
@@ -101,6 +105,7 @@ fun TopRatedMoviesOnlyCompose() {
                 .padding(top = contentPadding.calculateTopPadding()),
             columns = GridCells.Adaptive(100.dp),
         ) {
+            // region state
             when {
                 uiState?.isLoading == true -> item(span = { GridItemSpan(maxLineSpan) }) {
                     Box(
@@ -172,6 +177,7 @@ fun TopRatedMoviesOnlyCompose() {
                     }
                 }
             }
+            // endregion
         }
     }
 }
